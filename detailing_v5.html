@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chemia detailingowa</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #16161a;
+  color: #e0e0da;
+  padding: 20px 14px 60px;
+}
+
+h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.subtitle { font-size: 12px; color: #666; margin-bottom: 20px; }
+
+/* FILTRY */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.filter-bar button {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #444;
+  background: transparent;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.filter-bar button.on {
+  background: #fff;
+  color: #111;
+  border-color: #fff;
+}
+
+/* SORTOWANIE */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.sort-bar span { font-size: 12px; color: #666; }
+.sort-bar button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #222;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sort-bar button.on {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+/* SEKCJA KATEGORII */
+.cat {
+  background: #1e1e24;
+  border: 1px solid #2e2e38;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  background: #1e1e24;
+}
+.cat-head:active { background: #25252c; }
+.cat-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #888; }
+.cat-right { display: flex; align-items: center; gap: 8px; }
+.cat-badge { font-size: 10px; background: #2a2a32; color: #666; padding: 2px 8px; border-radius: 10px; }
+.cat-arrow { color: #555; font-size: 13px; transition: transform .2s; }
+.cat.closed .cat-arrow { transform: rotate(-90deg); }
+
+/* INFO KARTY */
+.cat-info {
+  border-top: 1px solid #2e2e38;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+  background: #1a1a20;
+}
+.cat.closed .cat-info,
+.cat.closed .cat-products { display: none; }
+
+.info-card {
+  background: #25252c;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.info-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 7px;
+}
+.info-card-title.b { color: #5599dd; }
+.info-card-title.g { color: #44bb88; }
+.info-card-title.a { color: #cc9933; }
+.info-card p { font-size: 11px; color: #999; line-height: 1.55; }
+.info-card ul { list-style: none; }
+.info-card ul li {
+  font-size: 11px; color: #bbb; line-height: 1.6;
+  padding-left: 14px; position: relative;
+}
+.info-card ul li::before { content: '→'; position: absolute; left: 0; color: #555; }
+.tool { display: inline-block; font-size: 10px; padding: 2px 8px; margin: 2px 2px 0 0; border-radius: 4px; background: #2e2e38; color: #999; border: 1px solid #3a3a48; }
+.info-note { font-size: 11px; color: #777; margin-top: 7px; line-height: 1.5; }
+
+/* PRODUKT */
+.cat-products { border-top: 1px solid #2e2e38; }
+
+.prod {
+  padding: 13px 16px;
+  border-bottom: 1px solid #25252c;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 0 12px;
+}
+.prod:last-child { border-bottom: none; }
+.prod.hide { display: none; }
+
+.prod-top {
+  grid-column: 1; grid-row: 1;
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+.prod-mid {
+  grid-column: 1; grid-row: 2;
+  margin-bottom: 4px;
+}
+.prod-bot {
+  grid-column: 1 / 3; grid-row: 3;
+  border-top: 1px solid #25252c;
+  margin-top: 8px; padding-top: 7px;
+}
+.prod-right {
+  grid-column: 2; grid-row: 1 / 3;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+
+.pill {
+  display: inline-block;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  white-space: nowrap;
+}
+.stag {
+  font-size: 10px; color: #666;
+  background: #25252c; padding: 2px 7px;
+  border-radius: 4px; white-space: nowrap;
+}
+.prod-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.prod-sub  { font-size: 11px; color: #888; margin-top: 1px; }
+.prod-desc { font-size: 12px; color: #999; line-height: 1.55; }
+.stars     { color: #c8a020; font-size: 13px; }
+.price     { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.vol       { font-size: 11px; color: #555; }
+
+/* BRAK WYNIKÓW */
+.empty { display: none; text-align: center; padding: 30px; color: #555; font-size: 14px; }
+.empty.show { display: block; }
+
+/* PODSUMOWANIE */
+.summary {
+  margin-top: 20px;
+  background: #1e1e24;
+  border: 1px solid #2e2e38;
+  border-radius: 10px;
+  padding: 14px;
+}
+.summary h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; margin-bottom: 12px; }
+.sum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.sum-item { background: #25252c; border: 1px solid #333; border-radius: 8px; padding: 10px 12px; }
+.sum-desc { font-size: 11px; color: #666; margin: 5px 0; line-height: 1.4; }
+.sum-price { font-weight: 700; font-size: 14px; }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .cat-info { grid-template-columns: 1fr; }
+  .sum-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 380px) {
+  .sum-grid { grid-template-columns: 1fr; }
+  .prod-name { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<h1>Chemia detailingowa</h1>
+<p class="subtitle">Koch-Chemie · CarPro · Gyeon · Meguiar's · ADBL · Polska 2026</p>
+
+<div class="filter-bar">
+  <button class="on" data-brand="all">Wszystkie</button>
+  <button data-brand="kc">Koch-Chemie</button>
+  <button data-brand="cp">CarPro</button>
+  <button data-brand="gy">Gyeon</button>
+  <button data-brand="mg">Meguiar's</button>
+  <button data-brand="ad">ADBL</button>
+</div>
+
+<div class="sort-bar">
+  <span>Sortuj:</span>
+  <button id="sort-price">Cena ↕</button>
+  <button id="sort-rating">Ocena ↕</button>
+</div>
+
+<div id="catalog"></div>
+<div class="empty" id="empty">Brak produktów dla wybranej marki.</div>
+
+<div class="summary" id="summary"></div>
+
+<script>
+// ─── DANE ───────────────────────────────────────────────
+const B = {
+  kc: { name:'Koch-Chemie', bg:'#1a6abf', c:'#fff' },
+  cp: { name:'CarPro',      bg:'#0e7a5f', c:'#fff' },
+  gy: { name:'Gyeon',       bg:'#4a3aaa', c:'#fff' },
+  mg: { name:"Meguiar's",   bg:'#9a6000', c:'#fff' },
+  ad: { name:'ADBL',        bg:'#cc4400', c:'#fff' },
+};
+
+const CATS = [
+  {
+    id:'foam', title:'Piana aktywna — mycie wstępne',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Pierwszy etap mycia — nakładana przed kontaktem rękawicy z lakierem. Rozluźnia brud i kurz, dzięki czemu spłukujesz go bez ryzyka zarysowania lakieru.' },
+      { cls:'g', title:'Jak używać', items:['Rozcieńcz w lancy do piany (1:10–1:20)','Nanieś od dołu do góry na mokre auto','Odczekaj 3–5 min (nie pozwól wyschnąć)','Spłucz myjką od góry do dołu','Dopiero teraz myj rękawicą'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Myjka ciśnieniowa','Lanca do piany','Wąż / woda'], note:'Lanca do piany (~50–150 zł) to przystawka do myjki z pojemnikiem na płyn.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'Piana aktywna', name:'Gentle Snow Foam (GSF)', sub:'pH neutralna, zapach wiśni', desc:'Benchmark na rynku. Gęsta, świetnie przylega do pionowych powierzchni. Bezpieczna dla powłok i folii.', rating:5, price:126, vol:'1 L' },
+      { brand:'cp', stage:'Piana aktywna', name:'HydrO2 Foam 👑', sub:'Piana z SiO₂', desc:'Jedyna piana z SiO₂ — podczas prewashu zostawia warstwę hydrofobową. Rewelacyjna dla aut z powłoką ceramiczną.', rating:5, price:110, vol:'500 ml' },
+      { brand:'gy', stage:'Piana aktywna', name:'Q2M Foam', sub:'pH neutralna, bezpieczna', desc:'Bardzo gęsta, chroni powłoki ceramiczne. Rozcieńczenie 1:100. Jedna z najlepszych pian dla aut z nano-powłoką.', rating:5, price:79, vol:'1 L' },
+      { brand:'ad', stage:'Piana aktywna', name:'Yeti Pearl', sub:'Polska, bestseller', desc:'Fenomenalna cena vs jakość. Bardzo gęsta, aromat jabłka/mango. Bezpieczna dla powłok. Najlepsza w tej cenie.', rating:5, price:50, vol:'1 L' },
+    ]
+  },
+  {
+    id:'shampoo', title:'Szampon — mycie zasadnicze',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Główny etap mycia kontaktowego. Lubrykuje lakier podczas pracy rękawicą, minimalizując mikrozarysowania. Nie usuwa wosków ani powłok ceramicznych.' },
+      { cls:'g', title:'Jak używać', items:['Rozcieńcz 20–50 ml na 10 L wody','Metoda dwóch wiader — szampon + czysta woda','Myj poziomymi ruchami, panel po panelu','Po każdym panelu płucz rękawicę','Spłucz auto od góry do dołu'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Rękawica z mikrofibry','2 wiadra min. 10 L','Grit guard (wkładka)','Myjka lub wąż'], note:'Grit guard (~20 zł) — brud opada na dno i nie wraca na lakier.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'Szampon', name:'NanoMagic Shampoo', sub:'Szampon + ochrona nano', desc:'Mycie i konserwacja w jednym. Tworzy nano-warstwę odpychającą wodę i kurz. Nie usuwa wosków.', rating:5, price:79, vol:'750 ml' },
+      { brand:'cp', stage:'Szampon', name:'Reset 👑', sub:'Do powłok ceramicznych', desc:'Odtyka powłoki ceramiczne przywracając ich właściwości. Rozcieńczenie 1:500. Bardzo ekonomiczny.', rating:5, price:120, vol:'1 L' },
+      { brand:'gy', stage:'Szampon', name:'Q2M Bathe+', sub:'Z SiO₂', desc:'Pierwszy szampon z SiO₂ — odświeża hydrofobowość powłoki przy każdym myciu. Fenomenalny poślizg rękawicy.', rating:5, price:65, vol:'500 ml' },
+      { brand:'mg', stage:'Szampon', name:'Gold Class Car Wash', sub:'Klasyk USA', desc:'Bogata piana wzbogacona karnaubą — zostawia warstwę ochronną. Łatwo dostępny w każdym sklepie motoryzacyjnym.', rating:4, price:45, vol:'473 ml' },
+      { brand:'ad', stage:'Szampon', name:'Snowball', sub:'pH neutralny, wydajny', desc:'pH 6, nie rusza wosków ani powłok ceramicznych. 50 ml na 10 L. Najlepszy stosunek ceny do jakości.', rating:5, price:40, vol:'1 L' },
+    ]
+  },
+  {
+    id:'iron', title:'Iron remover — pył żelaza / felgi',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Usuwa metaliczne cząsteczki pyłu hamulcowego wbite w lakier i felgi. Reaguje chemicznie z żelazem zmieniając kolor na fioletowo-czerwony (efekt "krwawienia").' },
+      { cls:'g', title:'Jak używać', items:['Nałóż po pianie, przed szamponem','Spryskaj felgi i lakier (dół auta)','Odczekaj 3–5 min — obserwuj krwawienie','Nie pozwól wyschnąć','Spłucz dokładnie myjką'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Myjka ciśnieniowa','Szczotka do felg','Spryskiwacz'], note:'Szczotka do felg z długą rączką (~30–60 zł) dociera za tarczą hamulcową.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'Iron remover', name:'Reactive Rust Remover', sub:'Profesjonalny', desc:'Silny środek do usuwania rdzy i pyłu żelaznego. Reakcja barwna (fiolet). Stosowany w profesjonalnych studiach.', rating:5, price:90, vol:'500 ml' },
+      { brand:'cp', stage:'Iron remover', name:'IronX 👑', sub:'Standard branżowy', desc:'Absolutny benchmark — wszystkie inne iron removery są do niego porównywane. pH neutralny, bezpieczny dla folii PPF.', rating:5, price:140, vol:'1 L' },
+      { brand:'gy', stage:'Iron remover', name:'Q2M Iron Buster', sub:'Żel — felgi + lakier', desc:'Żelowa konsystencja — dłużej pozostaje na powierzchni. Bezpieczny dla powłok ceramicznych i folii PPF.', rating:5, price:79, vol:'500 ml' },
+      { brand:'ad', stage:'Iron remover', name:'Vampire Light', sub:'Neutralny pH, felgi', desc:'Bezpieczny dla felg lakierowanych i chromowanych. Dobry do regularnej konserwacji. Wystarczy dla amatorów.', rating:4, price:37, vol:'500 ml' },
+    ]
+  },
+  {
+    id:'tar', title:'Tar remover — smoła, asfalt, naklejki',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Usuwa drobinki asfaltu i smoły z nadkoli, progów i zderzaka. Rozpuszcza kleje po naklejkach. Bezpieczniejszy niż mechaniczne usuwanie — nie zarysowuje lakieru ani folii.' },
+      { cls:'g', title:'Jak używać', items:['Nałóż przed myciem szamponem','Spryskaj zanieczyszczone miejsca','Odczekaj 2–3 min — smoła zmięknie','Zetrzyj mikrofibą bez nacisku','Spłucz i myj szamponem'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Spryskiwacz','Mikrofibra (do brudnej roboty)','Rękawice gumowe'], note:'Użyj starszej mikrofibry — tar remover mocno zabrudza ściereczki.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'Tar remover', name:'Teer & Bitumen Entferner', sub:'Profesjonalny, silny', desc:'Bardzo skuteczny przy grubych plamach smoły. Stosowany w lakierniach. Silny zapach — potrzebna wentylacja.', rating:5, price:60, vol:'500 ml' },
+      { brand:'cp', stage:'Tar remover', name:'TriX Deironizer 👑', sub:'Tar + iron w jednym', desc:'Tar remover i iron remover w jednym produkcie. Usuwa smołę i pył żelaza jednocześnie — krok mniej.', rating:5, price:100, vol:'500 ml' },
+      { brand:'ad', stage:'Tar remover', name:'Tar & Glue Remover', sub:'Bezpieczny dla folii PPF', desc:'Na bazie olejów roślinnych — łagodniejszy od rozpuszczalnikowych. Bezpieczny dla folii PPF i winylu.', rating:5, price:40, vol:'500 ml' },
+    ]
+  },
+  {
+    id:'apc', title:'APC — uniwersalny środek czyszczący',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Mocno skoncentrowany środek do wszystkiego poza lakierem. Czyści plastiki, opony, progi, wnętrze, silnik i felgi. Rozcieńczanie reguluje siłę działania.' },
+      { cls:'g', title:'Jak używać', items:['Rozcieńcz: 1:10 opony, 1:20 plastiki, 1:50 wnętrze','Nanieś i odczekaj 1–2 min','Wyszoruj szczotką lub mikrofibą','Spłucz lub zetrzyj szmatką','Nigdy nierozcieńczonego na lakierze!'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Szczotka do detailingu','Spryskiwacz','Mikrofibra','Rękawice'], note:'Zestaw szczotek (~30–80 zł) czyści kratki wentylacyjne i trudno dostępne miejsca.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'APC', name:'Green Star 👑', sub:'Legenda w zielonej butelce', desc:'Absolutny klasyk i standard wśród APC. Czyści wszystko: plastiki, silnik, felgi, wnętrze, opony. Mocno skoncentrowany.', rating:5, price:55, vol:'1 L' },
+      { brand:'cp', stage:'APC', name:'Descale', sub:'Kwaśny, do powłok', desc:'Kwaśny APC do odtykania powłok ceramicznych i usuwania osadów z twardej wody. Unikalny w swojej roli.', rating:4, price:90, vol:'500 ml' },
+      { brand:'mg', stage:'APC', name:'All Purpose Cleaner', sub:'Dostępny wszędzie', desc:'Dobry APC do zastosowań amatorskich. Łatwo dostępny, rozsądna cena. Mniej skoncentrowany niż Green Star.', rating:4, price:35, vol:'473 ml' },
+    ]
+  },
+  {
+    id:'protect', title:'Ochrona lakieru — QD / Sealant',
+    info:[
+      { cls:'b', title:'Do czego służy', text:'Ostatni etap po myciu. QD daje szybki połysk i krótką ochronę. Sealant lub WetCoat daje hydrofobowość (woda w kulkach) przez kilka tygodni.' },
+      { cls:'g', title:'Jak używać', items:['QD: spryskaj lakier, zetrzyj mikrofibą','WetCoat: spryskaj mokry lakier przed spłukaniem','Sealant: aplikatorem na suchy lakier, zetrzyj po utwardzeniu','Zawsze w cieniu, nie na gorący lakier'] },
+      { cls:'a', title:'Potrzebne narzędzia', tools:['Mikrofibra 400–600 gsm','Spryskiwacz','Aplikator z pianki'], note:'Ręcznik min. 600 gsm — cieńsze zostawiają smugi. Aplikator z pianki ~10–20 zł.' },
+    ],
+    prods:[
+      { brand:'kc', stage:'Quick Detailer', name:'Allround Quick Shine', sub:'Do każdej powierzchni', desc:'Błyskawiczny połysk i ochrona na lakierze, szybach i plastikach. Usuwa smugi i kurz. Neutralny dla powłok.', rating:5, price:95, vol:'500 ml' },
+      { brand:'cp', stage:'Sealant SiO₂',  name:'Reload 2.0 👑', sub:'Legendarny sealant', desc:'Ochrona do 3 miesięcy, aplikacja na mokry lub suchy lakier. Głęboki połysk, silna hydrofobowość.', rating:5, price:390, vol:'1 L' },
+      { brand:'gy', stage:'WetCoat', name:'Q2M WetCoat', sub:'Ikona Gyeon', desc:'Spryskaj mokre auto przed ostatnim spłukaniem — gotowe. Ochrona 12 tygodni bez wycierania.', rating:5, price:65, vol:'500 ml' },
+      { brand:'mg', stage:'Quick Detailer', name:'Ultimate Quik Detailer', sub:'Amatorski klasyk', desc:'Łatwy w użyciu, ładny połysk. Dobry dla początkujących. Łatwo dostępny w Polsce.', rating:4, price:45, vol:'450 ml' },
+      { brand:'ad', stage:'Quick Detailer', name:'QD1', sub:'Połysk po każdym myciu', desc:'Błyskawiczny połysk i cienka warstwa ochronna. Usuwa ślady wody i kurz. Bezpieczny dla powłok.', rating:5, price:35, vol:'500 ml' },
+    ]
+  },
+];
+
+const SUMS = [
+  { brand:'kc', desc:'Piana + szampon + iron + tar + APC + QD', price:'~500 zł' },
+  { brand:'cp', desc:'Piana + szampon + iron + tar + sealant', price:'~560 zł' },
+  { brand:'gy', desc:'Piana + szampon + iron + WetCoat', price:'~390 zł' },
+  { brand:'mg', desc:'Szampon + APC + QD', price:'~125 zł' },
+  { brand:'ad', desc:'Piana + szampon + iron + tar + QD', price:'~202 zł' },
+];
+
+// ─── STAN ───────────────────────────────────────────────
+let activeBrand = 'all';
+let sortKey = '';
+let sortDir = 1;
+
+// ─── BUDUJ HTML ─────────────────────────────────────────
+function buildPill(brand) {
+  return `<span class="pill" style="background:${B[brand].bg};color:${B[brand].c}">${B[brand].name}</span>`;
+}
+
+function buildStars(n) {
+  return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function buildInfoCard(card) {
+  let body = '';
+  if (card.text)  body = `<p>${card.text}</p>`;
+  if (card.items) body = `<ul>${card.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+  if (card.tools) {
+    body = card.tools.map(t => `<span class="tool">${t}</span>`).join('') +
+           (card.note ? `<p class="info-note">${card.note}</p>` : '');
+  }
+  return `<div class="info-card">
+    <div class="info-card-title ${card.cls}">${card.title}</div>
+    ${body}
+  </div>`;
+}
+
+function buildProd(p, catId) {
+  return `<div class="prod" data-brand="${p.brand}" data-price="${p.price}" data-rating="${p.rating}" data-cat="${catId}">
+    <div class="prod-top">
+      ${buildPill(p.brand)}
+      <span class="stag">${p.stage}</span>
+    </div>
+    <div class="prod-mid">
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-sub">${p.sub}</div>
+    </div>
+    <div class="prod-right">
+      <span class="stars">${buildStars(p.rating)}</span>
+      <span class="price">~${p.price} zł</span>
+      <span class="vol">${p.vol}</span>
+    </div>
+    <div class="prod-bot">
+      <p class="prod-desc">${p.desc}</p>
+    </div>
+  </div>`;
+}
+
+function buildCatalog() {
+  const catalog = document.getElementById('catalog');
+  catalog.innerHTML = CATS.map(cat => `
+    <div class="cat" id="cat-${cat.id}">
+      <div class="cat-head" onclick="toggleCat('${cat.id}')">
+        <span class="cat-title">${cat.title}</span>
+        <div class="cat-right">
+          <span class="cat-badge" id="badge-${cat.id}">${cat.prods.length} produktów</span>
+          <span class="cat-arrow">▾</span>
+        </div>
+      </div>
+      <div class="cat-info">
+        ${cat.info.map(buildInfoCard).join('')}
+      </div>
+      <div class="cat-products" id="prods-${cat.id}">
+        ${cat.prods.map(p => buildProd(p, cat.id)).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('summary').innerHTML = `
+    <h3>Orientacyjny koszt kompletu</h3>
+    <div class="sum-grid">
+      ${SUMS.map(s => `
+        <div class="sum-item">
+          ${buildPill(s.brand)}
+          <p class="sum-desc">${s.desc}</p>
+          <div class="sum-price">${s.price}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ─── FILTROWANIE ────────────────────────────────────────
+function doFilter() {
+  let total = 0;
+
+  CATS.forEach(cat => {
+    const container = document.getElementById('prods-' + cat.id);
+    const section   = document.getElementById('cat-' + cat.id);
+    const badge     = document.getElementById('badge-' + cat.id);
+    const prods     = container.querySelectorAll('.prod');
+
+    // sortuj jeśli trzeba
+    if (sortKey) {
+      const arr = Array.from(prods);
+      arr.sort((a, b) => (parseFloat(a.dataset[sortKey]) - parseFloat(b.dataset[sortKey])) * sortDir);
+      arr.forEach(el => container.appendChild(el));
+    }
+
+    // pokaż / ukryj
+    let visible = 0;
+    prods.forEach(p => {
+      const show = activeBrand === 'all' || p.dataset.brand === activeBrand;
+      p.classList.toggle('hide', !show);
+      if (show) visible++;
+    });
+
+    // aktualizuj badge i sekcję
+    badge.textContent = visible + ' produktów';
+    section.style.display = visible > 0 ? '' : 'none';
+    total += visible;
+  });
+
+  document.getElementById('empty').classList.toggle('show', total === 0);
+}
+
+// ─── EVENTY ─────────────────────────────────────────────
+function toggleCat(id) {
+  document.getElementById('cat-' + id).classList.toggle('closed');
+}
+
+// filtry marek
+document.querySelector('.filter-bar').addEventListener('click', function(e) {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  document.querySelectorAll('.filter-bar button').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeBrand = btn.dataset.brand;
+  doFilter();
+});
+
+// sortowanie
+document.getElementById('sort-price').addEventListener('click', function() {
+  if (sortKey === 'price') { sortDir *= -1; }
+  else { sortKey = 'price'; sortDir = 1; }
+  this.textContent = 'Cena ' + (sortDir === 1 ? '↑' : '↓');
+  document.getElementById('sort-rating').textContent = 'Ocena ↕';
+  doFilter();
+});
+
+document.getElementById('sort-rating').addEventListener('click', function() {
+  if (sortKey === 'rating') { sortDir *= -1; }
+  else { sortKey = 'rating'; sortDir = -1; }
+  this.textContent = 'Ocena ' + (sortDir === -1 ? '↓' : '↑');
+  document.getElementById('sort-price').textContent = 'Cena ↕';
+  doFilter();
+});
+
+// ─── INIT ───────────────────────────────────────────────
+buildCatalog();
+doFilter();
+</script>
+</body>
+</html>
